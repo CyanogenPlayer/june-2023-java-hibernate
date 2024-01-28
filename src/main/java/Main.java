@@ -14,8 +14,9 @@ public class Main {
                 .configure("hibernate.cfg.xml")
                 .build();
         Metadata metadata = new MetadataSources(serviceRegistry)
-                .addAnnotatedClass(Word.class)
                 .addAnnotatedClass(Car.class)
+                .addAnnotatedClass(DriveLicense.class)
+                .addAnnotatedClass(Owner.class)
                 .getMetadataBuilder()
                 .build();
 
@@ -23,21 +24,22 @@ public class Main {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
 
-        session.persist(new Word("lol"));
-        session.persist(new Word("kek"));
-        session.persist(new Word("hello"));
-        System.out.println("created and added words");
+        Car car1 = new Car("toyoda", CarType.FAMILY, 100, 2000, 2002);
+        Car car2 = new Car("bmw", CarType.SUPER_CAR, 1000, 20000, 2022);
+        DriveLicense license = new DriveLicense("blablabla");
 
-        session.persist(new Car("toyoda", CarType.FAMILY, 100, 2000, 2002));
-        session.persist(new Car("bmw", CarType.SUPER_CAR, 1000, 20000, 2022));
-        session.persist(new Car("mercedes", CarType.SPORT_CAR, 120, 200_000, 2012));
+        session.persist(car1);
+        session.persist(car2);
+        session.persist(license);
+
+        Owner owner = new Owner("vova", List.of(car1, car2), license);
+
+        session.persist(owner);
+
         session.getTransaction().commit();
 
-        List<String> values = session.createNativeQuery("select value from word").list();
-        System.out.println(values);
-
-        List<Car> cars = session.createNativeQuery("select * from car", Car.class).list();
-        System.out.println(cars);
+        List<Owner> owners = session.createQuery("select o from Owner o", Owner.class).list();
+        System.out.println(owners);
 
         session.close();
         sessionFactory.close();
